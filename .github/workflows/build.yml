@@ -5,14 +5,41 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3-pip openjdk-17-jdk zip unzip libffi-dev libssl-dev libncurses5 libncursesw5-dev zlib1g-dev libtool autoconf automake cmake pkg-config
-          pip3 install --upgrade Cython==0.29.33 buildozer
+          sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev libltdl-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev libgstreamer1.0-dev
+          pip install --upgrade pip
+          pip install Cython==0.29.33 buildozer
+
+      - name: Accept Android Licenses
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
+          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo "24333f8a63b6825ea9c5514f83c1059b8ea9b9df" >> ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          mkdir -p $ANDROID_HOME/licenses || true
+          cp ~/.buildozer/android/platform/android-sdk/licenses/* $ANDROID_HOME/licenses/ || true
+          yes | sdkmanager --licenses || true
+
       - name: Build APK
         run: |
-          buildozer android debug
+          yes | buildozer android debug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
