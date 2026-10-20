@@ -1,17 +1,19 @@
 name: Build APK
-on: [push, workflow_dispatch]
+on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
+      - name: Install Buildozer
+        run: |
+          sudo apt update
+          sudo apt install -y openjdk-17-jdk zip unzip python3-pip
+          pip3 install Cython==0.29.33 buildozer
       - name: Build APK
-        uses: ArtemSBulgakov/buildozer-action@v1
-        with:
-          command: buildozer android debug
-          buildozer_version: stable
+        run: buildozer android debug
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: BlackWidow-APK
           path: bin/*.apk
